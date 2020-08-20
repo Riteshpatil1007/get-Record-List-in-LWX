@@ -1,0 +1,202 @@
+	LWC about basics  (TP-09) 
+		riteshpatil36@cunning-bear-av0thm.com
+		P/w- Ritesh@1994
+		
+
+3- get Opportunity List
+
+					*-*-*-*-*-*-*-*-*-* 1- get Account List *-*-*-*-*-*-*-*-
+										getAccountListCls.cls
+										
+public with sharing class getAccountListCls {
+    @AuraEnabled(cacheable=true)
+    public static List<Account> accMethd(){
+        return [SELECT Id, Name, AnnualRevenue, Type 
+                FROM Account 
+                WHERE AnnualRevenue != null AND Type != null
+                LIMIT 10 ];
+    }
+}
+								
+										getAccountList.html
+
+<template>
+    <div class="slds-p-around_medium">
+        <lightning-card icon-name="standard:account" title="List of Accounts">
+            <div class="slds-p-around_medium">
+                <template for:each={wireAccount.data} for:item="acc">
+                   <div class="slds:item" key={acc.Id}>
+                       <strong>{acc.Name}</strong><br>
+                       <lightning-formatted-number value={acc.AnnualRevenue}
+                            format-style="currency"
+                            currency-code="USD"
+                            currency-display-as="code">
+                        </lightning-formatted-number><br>
+                        <p><b> Account Type: </b>{acc.Type}</p><br><br>     
+                   </div>
+                </template>
+            </div>
+        </lightning-card>
+    </div>
+</template>
+										getAccountList.js
+									
+import { LightningElement, wire } from 'lwc';
+import acctListAlias from '@salesforce/apex/getAccountListCls.accMethd'
+
+export default class GetAccountList extends LightningElement {
+
+    @wire(acctListAlias)
+    wireAccount
+}									
+
+					*-*-*-*-*-*-*-*-*-* 2- get Contact List *-*-*-*-*-*-*-*-
+										getContactListCls.cls	
+										
+public with sharing class getContactListCls {
+    @AuraEnabled(cacheable=true)
+    public static List<Contact> contactListMeth(){
+        return [SELECT FirstName, LastName, Phone, Email FROM Contact ];
+        
+    }
+}
+
+			
+										getContactList.html
+										
+<template>
+    <div class="slds-p-around_medium">
+        <lightning-card icon-name="standard:contact" title="List of Contacts">
+            <div class="slds-p-around_medium">
+                <template for:each={wireContact.data} for:item="con">
+                   <div class="slds:item" key={con.Id}>
+                       <strong>{con.FirstName} {con.LastName}  </strong><br>
+                       <lightning-formatted-phone value={con.Phone}></lightning-formatted-phone><br>
+                       <lightning-formatted-email value={con.Email}></lightning-formatted-email><br><br>
+                       <!-- <h1>{con.Phone}</h1>
+                       <h2>{con.Email}</h2> -->
+                       
+                   </div>
+                </template>
+
+            </div>
+        </lightning-card>
+    </div>
+</template>
+
+//NOTE Same thing we are doing using @wire function (Only few changes are there...
+	instead of 'wireContact.data' property we using 'results' and 'con' we are using 'res' as item name.
+
+	<div class="slds-p-around_medium">
+        <lightning-card icon-name="standard:contact" title="List of Contacts">
+            <div class="slds-p-around_medium">
+                <template for:each={results} for:item="res">
+                   <div class="slds:item" key={res.Id}>
+                       <strong>{res.FirstName} {res.LastName}  </strong><br>
+                       <lightning-formatted-phone value={res.Phone}></lightning-formatted-phone><br>
+                       <lightning-formatted-email value={res.Email}></lightning-formatted-email><br><br>                      
+                   </div>
+                </template>
+            </div>
+        </lightning-card>
+    </div>
+
+										getContactList.js
+										
+import { LightningElement, wire } from 'lwc';
+import getAccountAlias from '@salesforce/apex/getContactListCls.contactListMeth'
+
+export default class GetContactList extends LightningElement {
+
+    @wire(getAccountAlias)
+    wireContact
+}
+
+
+//NOTE Same thing we are doing using @wire function (Only few changes are there...
+	instead of 'wireContact.data' property we using 'results' and 'con' we are using 'res' as item name.
+	
+	import { LightningElement, wire } from 'lwc';
+import getAccountAlias from '@salesforce/apex/getContactListCls.contactListMeth'
+
+export default class GetContactList extends LightningElement {
+    results
+
+    @wire(getAccountAlias)
+    wireContact({data, error}){
+        if(data){
+            this.results = data
+
+        }
+        if(error){
+            console.error(error)
+        }
+    }
+}
+
+
+
+					*-*-*-*-*-*-*-*-*-* 3- get Opportunity List *-*-*-*-*-*-*-*-
+										getOpportunityListCls.cls	
+					
+public with sharing class getOpportunityListCls {
+    @AuraEnabled(cacheable=true)
+    public static List<Opportunity> oppoListMeth(){
+        return [ SELECT Name, Amount, StageName, CloseDate FROM Opportunity LIMIT 30];    
+    }
+}
+										
+										getOpportunityList.html
+										
+<template>
+    <div class="slds-p-around_medium">
+        <lightning-card icon-name="standard:opportunity" title="List of Opportunities">
+            <div class="slds-p-around_medium">
+                <template for:each={wireOpportunity.data} for:item="oppo">
+                   <div class="slds:item" key={oppo.Id}>
+                       <strong>Name: {oppo.Name}</strong><br>
+                       <p><b>Amount: </b><lightning-formatted-number value={oppo.Amount}></lightning-formatted-number></p>
+                       <strong>Stage Name: {oppo.StageName}</strong><br>
+                       <p><b>Closed Date: </b><lightning-formatted-date-time value={oppo.CloseDate}></lightning-formatted-date-time></p><br><br>     
+                   </div>
+                </template>
+
+            </div>
+        </lightning-card>
+    </div>
+    
+</template>
+										getOpportunityList.js
+										
+import { LightningElement, wire } from 'lwc';
+import oppoListAlias from '@salesforce/apex/getOpportunityListCls.oppoListMeth'
+
+export default class GetOpportunityList extends LightningElement {
+    @wire(oppoListAlias)
+    wireOpportunity
+}
+
+										getOpportunityList.js-meta.xml (same meta.xml file -for all three program)
+
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>49.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <!--<target>lightning__Tab</target>-->
+        <!--<target>lightning__Inbox</target>-->
+        <!--<target>lightning__UtilityBar</target>-->
+        <!--<target>lightning__FlowScreen</target>-->
+        <!--<target>lightningSnapin__ChatMessage</target>-->
+        <!--<target>lightningSnapin__Minimized</target>-->
+        <!--<target>lightningSnapin__PreChat</target>-->
+        <!--<target>lightningSnapin__ChatHeader</target>-->
+        <!--<target>lightningCommunity__Page</target>-->
+        <!--<target>lightningCommunity__Default</target>-->
+    </targets>
+</LightningComponentBundle>
+										
+
